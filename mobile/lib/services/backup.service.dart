@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -44,7 +45,13 @@ class BackupService {
     final String deviceId = Store.get(StoreKey.deviceId);
 
     try {
-      return await _apiService.assetApi.getAllUserAssetsByDeviceId(deviceId);
+      debugPrint("DHRUMIL getDeviceBackupAsset running");
+      return await AssetApi(
+        ApiClient(
+          basePath: Store.get(StoreKey.uploadEndpoint),
+          authentication: this._apiService.assetApi.apiClient.authentication,
+        ),
+      ).getAllUserAssetsByDeviceId(deviceId);
     } catch (e) {
       debugPrint('Error [getDeviceBackupAsset] ${e.toString()}');
       return null;
@@ -177,8 +184,12 @@ class BackupService {
     final Set<String> existing = {};
     try {
       final String deviceId = Store.get(StoreKey.deviceId);
+      debugPrint("DHRUMIL checkExistingAssets running");
+
       final CheckExistingAssetsResponseDto? duplicates =
-          await _apiService.assetApi.checkExistingAssets(
+          await AssetApi(
+        ApiClient(basePath: Store.get(StoreKey.uploadEndpoint)),
+      ).checkExistingAssets(
         CheckExistingAssetsDto(
           deviceAssetIds: candidates.map((e) => e.id).toList(),
           deviceId: deviceId,
@@ -427,21 +438,62 @@ class BackupService {
         return "OTHER";
     }
   }
+  
+  createRequest(Uri uri, Function(int, int) uploadProgressCb,
+      AssetEntity entity, MultipartFile assetRawUploadData, String deviceId) {
+    var req = MultipartRequest(
+      'POST',
+      uri,
+      onProgress: ((bytes, totalBytes) => uploadProgressCb(bytes, totalBytes)),
+    );
+    req.headers["x-immich-user-token"] = Store.get(StoreKey.accessToken);
+    req.headers["Transfer-Encoding"] = "chunked";
+
+    req.fields['deviceAssetId'] = entity.id;
+    req.fields['deviceId'] = deviceId;
+    req.fields['fileCreatedAt'] =
+        entity.createDateTime.toUtc().toIso8601String();
+    req.fields['fileModifiedAt'] =
+        entity.modifiedDateTime.toUtc().toIso8601String();
+    req.fields['isFavorite'] = entity.isFavorite.toString();
+    req.fields['duration'] = entity.videoDuration.toString();
+
+    req.files.add(assetRawUploadData);
+  }
 }
 
 class MultipartRequest extends http.MultipartRequest {
-  /// Creates a new [MultipartRequest].
-  MultipartRequest(
-    super.method,
-    super.url, {
-    required this.onProgress,
-  });
-
   final void Function(int bytes, int totalBytes) onProgress;
 
-  /// Freezes all mutable fields and returns a
-  /// single-subscription [http.ByteStream]
-  /// that will emit the request body.
+  MultipartRequest(
+    String method,
+    Uri url, {
+    required this.onProgress,
+  }) : super(method, url);
+
+  @override
+  bool get followRedirects => true;
+
+  @override
+  int get maxRedirects => 5;
+
+  // @override
+  // Future<http.StreamedResponse> send(
+  //     {http.CancellationToken? cancellationToken}) async {
+  //   final streamedResponse =
+  //       await super.send(cancellationToken: cancellationToken);
+  //   return http.StreamedResponse(
+  //     streamedResponse.stream,
+  //     streamedResponse.statusCode,
+  //     contentLength: streamedResponse.contentLength,
+  //     request: streamedResponse.request,
+  //     headers: streamedResponse.headers,
+  //     isRedirect: streamedResponse.isRedirect,
+  //     persistentConnection: streamedResponse.persistentConnection,
+  //     reasonPhrase: streamedResponse.reasonPhrase,
+  //   );
+  // }
+
   @override
   http.ByteStream finalize() {
     final byteStream = super.finalize();

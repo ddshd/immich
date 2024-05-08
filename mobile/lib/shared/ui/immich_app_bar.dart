@@ -82,7 +82,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
             padding: const EdgeInsets.all(3.5),
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              strokeCap: StrokeCap.round,
+              // strokeCap: StrokeCap.round,
               valueColor: AlwaysStoppedAnimation<Color>(iconColor),
               semanticsLabel: 'backup_controller_page_backup'.tr(),
             ),

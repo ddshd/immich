@@ -7,7 +7,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 
 class ApiService {
   late ApiClient _apiClient;
@@ -59,12 +59,47 @@ class ApiService {
     trashApi = TrashApi(_apiClient);
   }
 
+  Future<void> resolveAndSetUploadEndpoint() async {
+    final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
+    String finalUploadEndpoint = '$savedEndpoint/asset/upload';
+    // Make OPTIONS request to check if there are any redirects
+    // Handling cases where someone may have configured a redirect
+    // to a different public upload endpoint
+    final client = http.Client();
+
+    // Try a max of 5 times to follow redirects
+    for (int i = 0; i < 5; i++) {
+      final req = http.Request('HEAD', Uri.parse(finalUploadEndpoint));
+      req.followRedirects = false;
+
+      final response = await client.send(req);
+      if (response.isRedirect) {
+        finalUploadEndpoint = response.headers['location']!;
+      } else {
+        break;
+      }
+    }
+
+    finalUploadEndpoint = await _resolveEndpoint(
+      Uri.parse(finalUploadEndpoint).origin.toString(),
+    );
+
+    debugPrint(
+      "DHRUMIL Final Upload Endpoint: $finalUploadEndpoint",
+    );
+
+    // Save in hivebox for background
+    Store.put(StoreKey.uploadEndpoint, finalUploadEndpoint);
+  }
+
   Future<String> resolveAndSetEndpoint(String serverUrl) async {
     final endpoint = await _resolveEndpoint(serverUrl);
     setEndpoint(endpoint);
 
     // Save in hivebox for next startup
     Store.put(StoreKey.serverEndpoint, endpoint);
+
+    await resolveAndSetUploadEndpoint();
     return endpoint;
   }
 
@@ -91,7 +126,7 @@ class ApiService {
   }
 
   Future<bool> _isEndpointAvailable(String serverUrl) async {
-    final Client client = Client();
+    final http.Client client = http.Client();
 
     if (!serverUrl.endsWith('/api')) {
       serverUrl += '/api';
@@ -125,7 +160,7 @@ class ApiService {
   }
 
   Future<String> _getWellKnownEndpoint(String baseUrl) async {
-    final Client client = Client();
+    final http.Client client = http.Client();
 
     try {
       final res = await client.get(

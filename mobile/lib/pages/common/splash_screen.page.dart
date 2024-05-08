@@ -90,6 +90,8 @@ class SplashScreenPage extends HookConsumerWidget {
         // User was unable to login through either offline or online methods
         context.replaceRoute(const LoginRoute());
       }
+
+      await apiService.resolveAndSetUploadEndpoint();
     }
 
     useEffect(
