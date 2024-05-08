@@ -30,14 +30,6 @@
         />
 
         <SettingInputField
-        inputType={SettingInputFieldType.TEXT}
-        label="UPLOAD DOMAIN"
-        desc="Domain for asset uploads, including http(s)://. Useful for only exposing the upload endpoints to the internet."
-        bind:value={config.server.uploadDomain}
-        isEdited={config.server.uploadDomain !== savedConfig.server.uploadDomain}
-      />
-
-        <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label="WELCOME MESSAGE"
           desc="A message that is displayed on the login page."

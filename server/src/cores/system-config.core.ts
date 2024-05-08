@@ -144,7 +144,6 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   server: {
     externalDomain: '',
-    uploadDomain: '',
     loginPageMessage: '',
   },
   notifications: {

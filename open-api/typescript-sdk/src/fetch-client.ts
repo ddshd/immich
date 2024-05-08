@@ -983,9 +983,8 @@ export type SystemConfigReverseGeocodingDto = {
     enabled: boolean;
 };
 export type SystemConfigServerDto = {
-  externalDomain: string;
-  loginPageMessage: string;
-  uploadDomain: string;
+    externalDomain: string;
+    loginPageMessage: string;
 };
 export type SystemConfigStorageTemplateDto = {
     enabled: boolean;

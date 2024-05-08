@@ -363,9 +363,6 @@ class SystemConfigServerDto {
   externalDomain!: string;
 
   @IsString()
-  uploadDomain!: string;
-
-  @IsString()
   loginPageMessage!: string;
 }
 

@@ -11,16 +11,11 @@ export class AppController {
   @ApiExcludeEndpoint()
   @Get('.well-known/immich')
   getImmichWellKnown() {
-    return this.service.getConfig().then((config) => {
-      return {
-        api: {
-          endpoint: '/api',
-        },
-        upload: {
-          domain: config.server.uploadDomain,
-        },
-      };
-    });
+    return {
+      api: {
+        endpoint: '/api',
+      },
+    };
   }
 
   @ApiExcludeEndpoint()

@@ -15,37 +15,30 @@ class SystemConfigServerDto {
   SystemConfigServerDto({
     required this.externalDomain,
     required this.loginPageMessage,
-    required this.uploadDomain,
   });
 
   String externalDomain;
 
   String loginPageMessage;
 
-  String uploadDomain;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigServerDto &&
     other.externalDomain == externalDomain &&
-    other.loginPageMessage == loginPageMessage &&
-          other.uploadDomain == uploadDomain;
+    other.loginPageMessage == loginPageMessage;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (externalDomain.hashCode) +
-    (loginPageMessage.hashCode) +
-      (uploadDomain.hashCode);
+    (loginPageMessage.hashCode);
 
   @override
-  String toString() =>
-      'SystemConfigServerDto[externalDomain=$externalDomain, loginPageMessage=$loginPageMessage, uploadDomain=$uploadDomain]';
+  String toString() => 'SystemConfigServerDto[externalDomain=$externalDomain, loginPageMessage=$loginPageMessage]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'externalDomain'] = this.externalDomain;
       json[r'loginPageMessage'] = this.loginPageMessage;
-    json[r'uploadDomain'] = this.uploadDomain;
     return json;
   }
 
@@ -59,7 +52,6 @@ class SystemConfigServerDto {
       return SystemConfigServerDto(
         externalDomain: mapValueOfType<String>(json, r'externalDomain')!,
         loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
-        uploadDomain: mapValueOfType<String>(json, r'uploadDomain')!,
       );
     }
     return null;
@@ -109,7 +101,6 @@ class SystemConfigServerDto {
   static const requiredKeys = <String>{
     'externalDomain',
     'loginPageMessage',
-    'uploadDomain',
   };
 }
 

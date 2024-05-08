@@ -26,11 +26,6 @@ void main() {
       // TODO
     });
 
-    // String uploadDomain
-    test('to test the property `uploadDomain`', () async {
-      // TODO
-    });
-
 
   });
 
